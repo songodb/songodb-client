@@ -3,8 +3,8 @@ const { SongoDBClient } = require('../lib/client')
 
 const BASE_URL = process.env.SONGODB_URL
 
-describe('SongoDBCollection', () => {
-  const instanceid = "somekey"
+describe('insert', () => {
+  const instanceid = "collection"
   const dbname = "somedb"
   const collectionname = "somecollection"
   let collection = null
@@ -13,7 +13,7 @@ describe('SongoDBCollection', () => {
     collection = client.db(dbname).collection(collectionname)
   })
   afterEach(async () => {
-    await collection.deleteMany({})
+    await collection.db.dropDatabase()
   })
   it ('should call insertMany', async () => {
     let docs = [ 
@@ -27,6 +27,20 @@ describe('SongoDBCollection', () => {
     })
     expect(result.ops.map(doc => doc["_id"]).sort()).toEqual([ "1", "2", "3" ])
     expect(result.insertedIds.sort()).toEqual([ "1", "2", "3" ])
+  })
+})
+
+describe('find', () => {
+  const instanceid = "collection"
+  const dbname = "somedb"
+  const collectionname = "somecollection"
+  let collection = null
+  beforeAll(async () => {
+    let client = await SongoDBClient.connect(`${BASE_URL}/${instanceid}`)
+    collection = client.db(dbname).collection(collectionname)
+  })
+  afterEach(async () => {
+    await collection.db.dropDatabase()
   })
   it ('should call find', async () => {
     let docs = [ 
@@ -55,6 +69,30 @@ describe('SongoDBCollection', () => {
           "TimeMillis": expect.anything() 
         }
       }
+    })
+  })
+})
+
+describe('drop', () => {
+  const instanceid = "collection"
+  const dbname = "somedb"
+  const collectionname = "somecollection"
+  let collection = null
+  beforeEach(async () => {
+    let client = await SongoDBClient.connect(`${BASE_URL}/${instanceid}`)
+    collection = client.db(dbname).collection(collectionname)
+    await collection.insertOne({ hello: "world" })
+  })
+  afterEach(async () => {
+    try {
+      await collection.db.dropDatabase() // TODO: server shouldn't return error if db doesn't exist
+    } catch (err) { }
+  })
+  it ('should drop collection and contents', async () => {
+    let result = await collection.drop()
+    expect(result).toMatchObject({
+      deletedCount: 1, 
+      dropped: true
     })
   })
 })
