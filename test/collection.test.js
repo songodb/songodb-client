@@ -94,28 +94,70 @@ describe('update', () => {
     expect(results.map(result => result.modifiedCount)).toEqual([1,0,0,0,0,0,0,0,0,1])
   }, 30 * 1000)
   it ('should wait for the update to complete', async () => {
-    let results = await collection.updateMany(
+    let result = await collection.updateMany(
       { name: { "$in": [ "obj0", "obj9" ] } }, 
       { "$set": { i: 10 } },
       { maxScan: 1 }
     ).complete()
-    expect(results.map(result => result.modifiedCount)).toEqual([1,0,0,0,0,0,0,0,0,1])
+    expect(result).toMatchObject({
+      matchedCount: 2,
+      modifiedCount: 2,
+      explain: {
+        executionStats: { 
+          nReturned: 2,
+          totalDocsExamined: 10
+        },
+        s3: {
+          IsTruncated: false,
+          KeyCount: 10,
+        }
+      }
+    })
+    expect(result["_results"].map(result => result.modifiedCount)).toEqual([1,0,0,0,0,0,0,0,0,1])
   }, 30 * 1000)
   it ('should only updateOne record', async () => {
-    let results = await collection.updateOne(
+    let result = await collection.updateOne(
       { name: { "$in": [  "obj9" ] } }, 
       { "$set": { i: 10 } },
       { maxScan: 1 }
     )
-    expect(results.map(result => result.modifiedCount)).toEqual([0,0,0,0,0,0,0,0,0,1])
+    expect(result).toMatchObject({
+      matchedCount: 1,
+      modifiedCount: 1,
+      explain: {
+        executionStats: { 
+          nReturned: 1,
+          totalDocsExamined: 10
+        },
+        s3: {
+          IsTruncated: false,
+          KeyCount: 10,
+        }
+      }
+    })
+    expect(result["_results"].map(result => result.modifiedCount)).toEqual([0,0,0,0,0,0,0,0,0,1])
   }, 30 * 1000)
   it ('should replace only one record', async () => {
-    let results = await collection.replaceOne(
+    let result = await collection.replaceOne(
       { name: { "$in": [ "obj8", "obj9" ] } }, 
       { name: "rep8" },
       { maxScan: 1 }
     )
-    expect(results.map(result => result.matchedCount)).toEqual([0,0,0,0,0,0,0,0,1])
+    expect(result).toMatchObject({
+      matchedCount: 1,
+      modifiedCount: 1,
+      explain: {
+        executionStats: { 
+          nReturned: 1,
+          totalDocsExamined: 9
+        },
+        s3: {
+          IsTruncated: true, // client stopped scan because found first match
+          KeyCount: 9,
+        }
+      }
+    })
+    expect(result["_results"].map(result => result.matchedCount)).toEqual([0,0,0,0,0,0,0,0,1])
   }, 30 * 1000)
 })
 
@@ -148,18 +190,44 @@ describe('delete', () => {
     expect(results.map(result => result.deletedCount)).toEqual([1,0,0,0,0,0,0,0,0,1])
   }, 30 * 1000)
   it ('should wait for the delete to complete', async () => {
-    let results = await collection.deleteMany(
+    let result = await collection.deleteMany(
       { name: { "$in": [ "obj0", "obj9" ] } }, 
       { maxScan: 1 }
     ).complete()
-    expect(results.map(result => result.deletedCount)).toEqual([1,0,0,0,0,0,0,0,0,1])
+    expect(result).toMatchObject({
+      deletedCount: 2,
+      explain: {
+        executionStats: { 
+          nReturned: 2,
+          totalDocsExamined: 10
+        },
+        s3: {
+          IsTruncated: false,
+          KeyCount: 10,
+        }
+      }
+    })
+    expect(result["_results"].map(result => result.deletedCount)).toEqual([1,0,0,0,0,0,0,0,0,1])
   }, 30 * 1000)
   it ('should only delete one record', async () => {
-    let results = await collection.deleteOne(
+    let result = await collection.deleteOne(
       { name: { "$in": [  "obj8", "obj9" ] } }, 
       { maxScan: 1 }
     )
-    expect(results.map(result => result.deletedCount)).toEqual([0,0,0,0,0,0,0,0,1])
+    expect(result).toMatchObject({
+      deletedCount: 1,
+      explain: {
+        executionStats: { 
+          nReturned: 1,
+          totalDocsExamined: 9
+        },
+        s3: {
+          IsTruncated: true, // client stopped scan because found first match
+          KeyCount: 9,
+        }
+      }
+    })
+    expect(result["_results"].map(result => result.deletedCount)).toEqual([0,0,0,0,0,0,0,0,1])
   }, 30 * 1000)
 })
 
@@ -181,8 +249,8 @@ describe('drop', () => {
     await collection.drop() 
   })
   it ('should drop collection and contents', async () => {
-    let results = await collection.drop({ maxScan: 1 })
-    expect(results.map(result => result.dropped)).toEqual([
+    let result = await collection.drop({ maxScan: 1 })
+    expect(result["_results"].map(result => result.dropped)).toEqual([
       false,false,false,false,false,false,false,false,false,true
     ])
   }, 30 * 1000)
