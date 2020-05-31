@@ -27,7 +27,7 @@ describe('insert', () => {
       }
     })
     console.log(JSON.stringify(result, null, 2))
-  })
+  }, 30 * 1000)
   it ('should insert multiple documents', async () => {
     let inventory = instance.db('store').collection('inventory')
     let result = await inventory.insertMany([
@@ -36,7 +36,7 @@ describe('insert', () => {
       { item: "mousepad", qty: 25, tags: ["gel", "blue"], size: { h: 19, w: 22.85, uom: "cm" } }
     ])
     console.log(JSON.stringify(result, null, 2))
-  })
+  }, 30 * 1000)
 })
 
 describe('find', () => {
@@ -69,12 +69,12 @@ describe('find', () => {
     let inventory = instance.db('store').collection('inventory')
     let result = await inventory.findOne({ item: "canvas" })
     console.log(JSON.stringify(result, null, 2))
-  })
+  }, 30 * 1000)
   it ('should successfully find multiple documents', async () => {
     let inventory = instance.db('store').collection('inventory')
     let result = await inventory.find({ qty: { "$lte": 50 } })
     console.log(JSON.stringify(result, null, 2))
-  })
+  }, 30 * 1000)
   // it ('should insert multiple documents', async () => {
   //   let inventory = instance.db('store').collection('inventory')
   //   let result = await inventory.insertMany([
@@ -116,19 +116,19 @@ describe('update', () => {
     let inventory = instance.db('store').collection('inventory')
     let result = await inventory.updateOne({ item: "canvas" }, { "$inc": { qty: 25 } })
     console.log(JSON.stringify(result, null, 2))
-  })
+  }, 30 * 1000)
   it ('should successfully update multiple documents', async () => {
     let inventory = instance.db('store').collection('inventory')
     let result = await inventory.updateMany({ item: { "$in": [ "journal", "mousepad" ] } }, { "$inc":  100 })
     console.log(JSON.stringify(result, null, 2))
-  })
+  }, 30 * 1000)
   it ('should replace a document', async () => {
     let inventory = instance.db('store').collection('inventory')
     let result = await inventory.replaceOne(
       { item: "mat" }, 
       { item: "mat", qty: 100, tags: ["blue"], size: { h: 10.5, w: 20.5, uom: "cm" } })
     console.log(JSON.stringify(result, null, 2))
-  })
+  }, 30 * 1000)
 })
 
 describe('delete', () => {
@@ -161,17 +161,17 @@ describe('delete', () => {
     let inventory = instance.db('store').collection('inventory')
     let result = await inventory.deleteMany({ item: { "$in": [ "journal", "mousepad" ] } })
     console.log(JSON.stringify(result, null, 2))
-  })
+  }, 30 * 1000)
   it ('should successfully delete a single document', async () => {
     let inventory = instance.db('store').collection('inventory')
     let result = await inventory.deleteOne({ tags: "blue" })
     console.log(JSON.stringify(result, null, 2))
-  })
+  }, 30 * 1000)
   it ('should drop the entire collection', async () => {
     let inventory = instance.db('store').collection('inventory')
     let result = await inventory.drop()
     console.log(JSON.stringify(result, null, 2))
-  })
+  }, 30 * 1000)
 })
 
 describe('database', () => {
@@ -212,11 +212,11 @@ describe('database', () => {
 
     result = await instance.db('store').listCollections({ nameOnly: true })
     console.log(JSON.stringify(result, null, 2))
-  })
+  }, 30 * 1000)
   it ('should drop the entire database', async () => {
     let result = await instance.db('store').dropDatabase()
     console.log(JSON.stringify(result, null, 2))
-  })
+  }, 30 * 1000)
 })
 
 describe('database', () => {
@@ -257,9 +257,9 @@ describe('database', () => {
 
     result = await instance.db('store').listCollections({ nameOnly: true })
     console.log(JSON.stringify(result, null, 2))
-  })
+  }, 30 * 1000)
   it ('should drop the entire database', async () => {
     let result = await instance.db('store').dropDatabase()
     console.log(JSON.stringify(result, null, 2))
-  })
+  }, 30 * 1000)
 })

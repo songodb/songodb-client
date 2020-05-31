@@ -9,7 +9,7 @@ const { SongoDBClient } = require('../lib/client')
 const BASE_URL = process.env.SONGODB_URL
 
 describe('Cursor', () => {
-  const instanceid = "client"
+  const instanceid = "cursor"
   const dbname = "cursor"
   const collectionname = "Cursor"
   let collection = null
@@ -34,7 +34,7 @@ describe('Cursor', () => {
     for await (const result of cursor.pages()) {
       //console.log(JSON.stringify(result, null, 2))
     }
-  })
+  }, 30 * 1000)
   it ('should return a list iterator', async () => {
     let fn = collection.findRequest.bind(collection)
     let filter = { }
@@ -44,7 +44,7 @@ describe('Cursor', () => {
     for await (const result of cursor.list()) {
       //console.log(JSON.stringify(result, null, 2))
     }
-  })
+  }, 30 * 1000)
   it ('should return all docs sorted using toArray', async () => {
     let fn = collection.findRequest.bind(collection)
     let filter = { }
@@ -57,7 +57,7 @@ describe('Cursor', () => {
 })
 
 describe('fetchPages', () => {
-  const instanceid = "client"
+  const instanceid = "cursor"
   const dbname = "cursor"
   const collectionname = "fetchPages"
   let collection = null
@@ -98,7 +98,7 @@ describe('fetchPages', () => {
 })
 
 describe('fetchDocuments', () => {
-  const instanceid = "client"
+  const instanceid = "cursor"
   const dbname = "cursor"
   const collectionname = "fetchDocuments"
   let collection = null
