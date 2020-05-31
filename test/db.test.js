@@ -23,17 +23,25 @@ describe('dropDatabase', () => {
   const instanceid = "db"
   const dbname = "db"
   let client = null
-  beforeAll(async () => {
+  beforeEach(async () => {
     client = await SongoDBClient.connect(`${BASE_URL}/${instanceid}`)
     await client.db(dbname).collection('col1').insertOne({ hello: "world" })
+    await client.db(dbname).collection('col1').insertOne({ hello: "foo" })
   })
-  afterAll(async () => {
+  afterEach(async () => {
     await client.db(dbname).dropDatabase()
   })
-  it ('should successfully drop database and delete all contents', async () => {
+  it ('should successfully drop database in one scan', async () => {
     let result = await client.db(dbname).dropDatabase()
-    expect(result).toMatchObject({
-      deletedCount: 2, // should logically be 1 but right now server is counting metadata records as well i.e. system.*
+    expect(result[0]).toMatchObject({
+      deletedCount: 2, 
+      dropped: true
+    })
+  })
+  it ('should successfully drop database in multiple scans', async () => {
+    let result = await client.db(dbname).dropDatabase({ MaxKeys: 1 })
+    expect(result[1]).toMatchObject({
+      deletedCount: 1, 
       dropped: true
     })
   })
@@ -52,34 +60,26 @@ describe('listCollections', () => {
     } catch (err) { }
   })
   it ('should return no collections on non-existent database', async () => {
-    let result = await client.db(dbname).listCollections()
-    expect(result).toMatchObject({
-      docs: []
-    })
+    let result = await client.db(dbname).listCollections().toArray()
+    expect(result).toEqual([])
   })
   it ('should return all collections', async () => {
     await client.db(dbname).collection('col1').insertOne({ hello: "world" })
     await client.db(dbname).collection('col2').insertOne({ foo: "bar" })
-    let result = await client.db(dbname).listCollections()
-    expect(result).toMatchObject({
-      docs: [ { name: "col1" }, { name: "col2" } ]
-    })
+    let result = await client.db(dbname).listCollections().toArray()
+    expect(result).toEqual([ { name: "col1" }, { name: "col2" } ])
   })
   it ('should return collections using filter', async () => {
     await client.db(dbname).collection('col1').insertOne({ hello: "world" })
     await client.db(dbname).collection('col2').insertOne({ foo: "bar" })
-    let result = await client.db(dbname).listCollections({ name: { "$in": [ 'col1' ] } })
-    expect(result).toMatchObject({
-      docs: [ { name: "col1" } ]
-    })
+    let result = await client.db(dbname).listCollections({ name: { "$in": [ 'col1' ] } }).toArray()
+    expect(result).toEqual([ { name: "col1" } ])
   })
   it ('should only return collection names with nameOnly param', async () => {
     await client.db(dbname).collection('col1').insertOne({ hello: "world" })
     await client.db(dbname).collection('col2').insertOne({ foo: "bar" })
-    let result = await client.db(dbname).listCollections({}, { nameOnly: true })
-    expect(result).toMatchObject({
-      docs: [ "col1", "col2" ]
-    })
+    let result = await client.db(dbname).listCollections({}, { nameOnly: true }).toArray()
+    expect(result).toEqual([ "col1", "col2" ])
   })
 })
 

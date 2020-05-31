@@ -33,25 +33,19 @@ describe('listDatabases', () => {
     } catch (err) { }
   })
   it ('should empty if no databases exist', async () => {
-    let dbs = await client.listDatabases()
-    expect(dbs).toMatchObject({
-      docs: []
-    })
+    let dbs = await client.listDatabases().toArray()
+    expect(dbs).toEqual([])
   })
   it ('should return database if it exists', async () => {
     let col = client.db(dbname).collection('listDatabases')
     await col.insertOne({ hello: "world" })
-    let dbs = await client.listDatabases()
-    expect(dbs).toMatchObject({
-      docs: [ { name: dbname } ]
-    })
+    let dbs = await client.listDatabases().toArray()
+    expect(dbs).toEqual([ { name: dbname } ])
   })
   it ('should only return db names with nameOnly param', async () => {
     let col = client.db(dbname).collection('listDatabases')
     await col.insertOne({ hello: "world" })
-    let dbs = await client.listDatabases({ nameOnly: true })
-    expect(dbs).toMatchObject({
-      docs: [ dbname ]
-    })
+    let dbs = await client.listDatabases({ nameOnly: true }).toArray()
+    expect(dbs).toEqual([ dbname ])
   })
 })
