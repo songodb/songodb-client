@@ -85,7 +85,7 @@ describe('update', () => {
     let iterator = collection.updateMany(
       { name: { "$in": [ "obj0", "obj9" ] } }, 
       { "$set": { i: 10 } },
-      { MaxKeys: 1 }
+      { maxScan: 1 }
     ).iterator()
     let results = [ ]
     for await (const result of iterator) {
@@ -97,7 +97,7 @@ describe('update', () => {
     let results = await collection.updateMany(
       { name: { "$in": [ "obj0", "obj9" ] } }, 
       { "$set": { i: 10 } },
-      { MaxKeys: 1 }
+      { maxScan: 1 }
     ).complete()
     expect(results.map(result => result.modifiedCount)).toEqual([1,0,0,0,0,0,0,0,0,1])
   }, 30 * 1000)
@@ -105,7 +105,7 @@ describe('update', () => {
     let results = await collection.updateOne(
       { name: { "$in": [  "obj9" ] } }, 
       { "$set": { i: 10 } },
-      { MaxKeys: 1 }
+      { maxScan: 1 }
     )
     expect(results.map(result => result.modifiedCount)).toEqual([0,0,0,0,0,0,0,0,0,1])
   }, 30 * 1000)
@@ -113,7 +113,7 @@ describe('update', () => {
     let results = await collection.replaceOne(
       { name: { "$in": [ "obj8", "obj9" ] } }, 
       { name: "rep8" },
-      { MaxKeys: 1 }
+      { maxScan: 1 }
     )
     expect(results.map(result => result.matchedCount)).toEqual([0,0,0,0,0,0,0,0,1])
   }, 30 * 1000)
@@ -139,7 +139,7 @@ describe('delete', () => {
   it ('should return a list iterator', async () => {
     let iterator = collection.deleteMany(
       { name: { "$in": [ "obj0", "obj9" ] } }, 
-      { MaxKeys: 1 }
+      { maxScan: 1 }
     ).iterator()
     let results = [ ]
     for await (const result of iterator) {
@@ -150,14 +150,14 @@ describe('delete', () => {
   it ('should wait for the delete to complete', async () => {
     let results = await collection.deleteMany(
       { name: { "$in": [ "obj0", "obj9" ] } }, 
-      { MaxKeys: 1 }
+      { maxScan: 1 }
     ).complete()
     expect(results.map(result => result.deletedCount)).toEqual([1,0,0,0,0,0,0,0,0,1])
   }, 30 * 1000)
   it ('should only delete one record', async () => {
     let results = await collection.deleteOne(
       { name: { "$in": [  "obj8", "obj9" ] } }, 
-      { MaxKeys: 1 }
+      { maxScan: 1 }
     )
     expect(results.map(result => result.deletedCount)).toEqual([0,0,0,0,0,0,0,0,1])
   }, 30 * 1000)
@@ -181,7 +181,7 @@ describe('drop', () => {
     await collection.drop() 
   })
   it ('should drop collection and contents', async () => {
-    let results = await collection.drop({ MaxKeys: 1 })
+    let results = await collection.drop({ maxScan: 1 })
     expect(results.map(result => result.dropped)).toEqual([
       false,false,false,false,false,false,false,false,false,true
     ])
